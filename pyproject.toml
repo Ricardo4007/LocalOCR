@@ -1,0 +1,12 @@
+[project]
+name = "local-handwriting-ocr"
+version = "0.1.0"
+description = "Local batch OCR baseline for handwritten PNG document photos"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "paddleocr>=3.3,<3.4",
+    "paddlepaddle>=3.2,<3.3",
+]
+
+[tool.uv]
+package = false

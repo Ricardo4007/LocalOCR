@@ -1,0 +1,40 @@
+.venv/
+.venv-train/
+.cache/
+.build/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.log
+
+# Local configuration and credentials
+.env
+.env.*
+*.pem
+*.p12
+*.pfx
+*.key
+
+# Generated portable application and its writable directories
+deliver/
+runtime-tmp/
+runtime-home/
+runtime-tools/
+/LocalOCR/
+*.sqlite*
+*.db
+
+# Private source images, OCR outputs and downloaded models
+input/*
+!input/.gitkeep
+output/*
+!output/.gitkeep
+
+models/*
+!models/.gitkeep
+
+# Training artifacts and private datasets (if created later)
+training/output/
+training/checkpoints/
+training/dataset/

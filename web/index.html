@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Local OCR Studio</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #fdf6e3;
+      --surface: #eee8d5;
+      --surface-strong: #fdf6e3;
+      --ink: #073642;
+      --muted: #657b83;
+      --faint: #93a1a1;
+      --line: #93a1a1;
+      --soft-line: #d8d1bc;
+      --accent: #dc322f;
+      --accent-dark: #b22a2a;
+      --accent-soft: #fbe5e3;
+      --success: #859900;
+      --danger: #dc322f;
+      --shadow: 0 2px 8px rgba(7, 54, 66, .08);
+      --radius: 6px;
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--paper);
+      color: var(--ink);
+      font: 15px/1.5 Arial, Helvetica, "Microsoft YaHei", sans-serif;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .shell { max-width: 1480px; margin: 0 auto; padding: 28px 36px 72px; }
+     .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 32px; padding-bottom: 18px; border-bottom: 2px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 13px; }
+     .mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: var(--radius); background: var(--accent); color: #fdf6e3; font: 900 20px/1 Arial, sans-serif; }
+    .brand-name { font: 800 17px/1.1 Arial, Helvetica, sans-serif; letter-spacing: .03em; text-transform: uppercase; }
+    .eyebrow { color: var(--muted); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+     .local-pill { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 12px; color: var(--ink); background: var(--surface); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 16px; font: 900 clamp(43px, 6.7vw, 96px)/.91 Arial, Helvetica, sans-serif; letter-spacing: -.075em; text-transform: uppercase; }
+    .workspace { display: grid; grid-template-columns: minmax(350px, 420px) minmax(0, 1fr); gap: 28px; align-items: start; }
+     .card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+    .settings { padding: 24px; position: sticky; top: 18px; }
+    .card-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+    .card-title h2 { margin-bottom: 4px; font: 800 22px/1.1 Arial, Helvetica, sans-serif; letter-spacing: -.03em; text-transform: uppercase; }
+    .card-title p { margin-bottom: 0; color: var(--muted); font-size: 13px; }
+    .section { padding: 22px 0; border-top: 1px solid var(--soft-line); }
+    .section:first-of-type { padding-top: 0; border-top: 0; }
+    .section-label { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; margin-bottom: 11px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; }
+    .section-label small { color: var(--faint); font-weight: 500; }
+     .dropzone { min-height: 154px; display: grid; place-items: center; text-align: center; border: 1px dashed var(--line); border-radius: var(--radius); padding: 22px; background: #f7f0dd; transition: .18s ease; }
+    .dropzone.dragging, .dropzone:hover { border-color: var(--accent); background: var(--accent-soft); }
+     .drop-icon { width: 42px; height: 42px; display: grid; place-items: center; margin: 0 auto 9px; border-radius: var(--radius); background: var(--accent); color: #fdf6e3; font-size: 20px; }
+    .dropzone strong { display: block; margin-bottom: 2px; }
+    .dropzone span { display: block; color: var(--muted); font-size: 13px; }
+    .link-button { border: 0; padding: 0; color: var(--accent-dark); background: transparent; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+    input[type=file] { display: none; }
+    .file-list { display: grid; gap: 6px; margin-top: 12px; max-height: 116px; overflow: auto; }
+     .file-row { display: flex; justify-content: space-between; gap: 10px; padding: 7px 10px; border-left: 3px solid var(--accent); background: #e7dfc9; color: var(--muted); font-size: 12px; }
+    .file-row b { color: var(--ink); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .form-grid { display: grid; gap: 13px; }
+    .field { display: grid; gap: 6px; }
+    .field label { font-size: 13px; font-weight: 700; }
+    .field hint { color: var(--muted); font-size: 12px; }
+     input[type=text], input[type=number], select { width: 100%; min-height: 43px; padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--radius); outline: 0; color: var(--ink); background: var(--surface-strong); }
+    input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .device-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+     .device-option { min-height: 66px; padding: 8px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-strong); color: var(--muted); text-align: left; }
+    .device-option strong { display: block; color: var(--ink); font-size: 13px; }
+    .device-option small { font-size: 11px; }
+     .device-option.active { border-color: var(--accent); background: var(--accent); color: #fdf6e3; box-shadow: inset 0 0 0 1px var(--accent); }
+     .device-option.active strong { color: #fdf6e3; }
+    .device-option:disabled { opacity: .42; cursor: not-allowed; }
+    .switch-list { display: grid; gap: 9px; }
+    .switch { display: flex; align-items: center; justify-content: space-between; gap: 14px; color: var(--ink); font-size: 13px; cursor: pointer; }
+    .switch input { position: absolute; opacity: 0; pointer-events: none; }
+     .switch-track { flex: 0 0 auto; width: 38px; height: 22px; padding: 3px; border-radius: 999px; background: var(--faint); transition: .18s ease; }
+     .switch-track::after { content: ""; display: block; width: 16px; height: 16px; border-radius: 50%; background: #fdf6e3; box-shadow: 0 1px 3px rgba(7, 54, 66, .25); transition: .18s ease; }
+    .switch input:checked + .switch-track { background: var(--accent); }
+    .switch input:checked + .switch-track::after { transform: translateX(16px); }
+     .primary { width: 100%; min-height: 48px; border: 0; border-radius: var(--radius); background: var(--accent); color: #fdf6e3; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; transition: .18s ease; }
+    .primary:hover { background: var(--accent-dark); }
+    .primary:disabled { opacity: .55; cursor: wait; transform: none; }
+     .secondary { min-height: 38px; padding: 0 13px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-strong); color: var(--ink); font-weight: 700; }
+     .secondary:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .path-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px; }
+     .directory-button { min-height: 43px; padding: 0 11px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-size: 12px; font-weight: 700; }
+    .directory-button:hover { border-color: var(--accent); color: var(--accent-dark); }
+    .notice { margin-top: 12px; color: var(--muted); font-size: 12px; }
+    .notice.error { color: var(--danger); }
+    .results-panel { min-width: 0; }
+    .results-head { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 16px; }
+    .results-head h2 { margin-bottom: 5px; font: 800 29px/1.15 Arial, Helvetica, sans-serif; letter-spacing: -.04em; text-transform: uppercase; }
+    .results-head p { margin: 0; color: var(--muted); }
+    .runtime { color: var(--muted); font-size: 12px; text-align: right; }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+    .metric { padding: 16px; border: 1px solid var(--line); border-radius: 0; background: var(--surface); }
+    .metric span { display: block; color: var(--muted); font-size: 12px; }
+    .metric strong { display: block; margin-top: 4px; font: 800 22px Arial, Helvetica, sans-serif; }
+     .progress { padding: 17px 19px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+     .progress-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+     .progress-count { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+    .status { color: var(--muted); font-size: 13px; }
+    .status.running { color: var(--accent-dark); }
+    .status.completed { color: var(--success); }
+    .status.failed { color: var(--danger); }
+     .bar { height: 8px; margin-top: 12px; overflow: hidden; border-radius: 999px; background: #d8d1bc; }
+     .bar-fill { width: 0; height: 100%; border-radius: inherit; background: var(--accent); transition: width .25s ease; }
+     .bar-fill.completed { background: var(--success); }
+     .bar-fill.failed { background: var(--danger); }
+    .error { margin-top: 10px; color: var(--danger); white-space: pre-wrap; font-size: 12px; }
+    .results { display: grid; gap: 14px; margin-top: 18px; }
+    .empty { min-height: 270px; display: grid; place-items: center; padding: 30px; border: 1px dashed var(--line); border-radius: 0; color: var(--muted); text-align: center; background: var(--surface); }
+     .result { display: grid; grid-template-columns: minmax(220px, 330px) minmax(0, 1fr); gap: 19px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+     .image-preview { position: relative; display: block; width: 100%; padding: 0; border: 0; border-radius: var(--radius); background: transparent; color: var(--ink); cursor: zoom-in; }
+    .result img { display: block; width: 100%; height: 250px; object-fit: contain; border-radius: var(--radius); border: 1px solid var(--line); background: #f7f0dd; }
+     .image-preview span { position: absolute; right: 8px; bottom: 8px; padding: 4px 7px; border-radius: 4px; background: rgba(7, 54, 66, .84); color: #fdf6e3; font-size: 11px; }
+    .result h3 { margin: 3px 0 5px; font: 800 19px Arial, Helvetica, sans-serif; overflow-wrap: anywhere; }
+    .meta { color: var(--muted); font-size: 12px; }
+     .text-box { min-height: 145px; max-height: 330px; margin-top: 13px; padding: 13px; overflow: auto; border-left: 3px solid var(--accent); border-radius: var(--radius); background: #e7dfc9; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; }
+    .result-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+     .result-links button { display: inline-flex; align-items: center; min-height: 30px; padding: 0 10px; border: 0; border-radius: 4px; color: #fdf6e3; background: var(--accent); font-size: 12px; font-weight: 700; cursor: pointer; }
+     .result-links button:hover { background: var(--accent-dark); }
+     .hover-tip { position: fixed; z-index: 20; max-width: 260px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: #073642; color: #fdf6e3; font-size: 12px; line-height: 1.4; pointer-events: none; }
+     .modal[hidden] { display: none; }
+     .modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px; background: rgba(7, 54, 66, .78); }
+     .modal-content { position: relative; max-width: min(1200px, 96vw); max-height: 94vh; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: 0 12px 40px rgba(7, 54, 66, .3); }
+     .modal-content img { display: block; max-width: min(1160px, 92vw); max-height: 84vh; object-fit: contain; background: #f7f0dd; }
+     .modal-close { position: absolute; top: -15px; right: -15px; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 50%; background: var(--surface-strong); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; }
+     .modal-caption { margin: 8px 2px 0; color: var(--muted); font-size: 12px; }
+    .footer-note { margin-top: 22px; color: var(--faint); font-size: 12px; text-align: center; }
+    @media (max-width: 960px) { .workspace { grid-template-columns: 1fr; } .settings { position: static; } }
+    @media (max-width: 600px) { .shell { padding: 22px 15px 45px; } .topbar, .results-head { align-items: flex-start; flex-direction: column; } .local-pill, .runtime { text-align: left; } .metrics { grid-template-columns: 1fr; } .result { grid-template-columns: 1fr; } .result img { height: 220px; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="mark">O</div><div class="brand-name">Local OCR</div></div>
+      <div style="display:flex;align-items:center;gap:14px"><span id="runtime" class="runtime">检测运行环境</span><button id="stopServer" class="secondary" type="button">停止服务</button></div>
+    </header>
+
+    <main class="workspace">
+      <section class="card settings">
+        <div class="card-title"><div><h2>设置</h2></div></div>
+
+        <div class="section">
+          <div class="section-label"><span>图片</span><small id="uploadCount">尚未选择</small></div>
+          <div id="dropzone" class="dropzone" data-help="拖放或选择需要识别的 PNG、JPG、JPEG 图片。图片会保存到应用目录内的临时上传批次。">
+            <div><div class="drop-icon">↑</div><strong>拖放图片</strong><span>PNG · JPG · JPEG</span><button id="chooseFiles" class="link-button" type="button">选择文件</button></div>
+          </div>
+          <input id="filePicker" type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg" multiple>
+          <div id="fileList" class="file-list"></div>
+          <div class="field" style="margin-top:13px" data-help="选择一个包含待识别图片的目录。可以使用应用目录内的目录，也可以选择其他磁盘目录。"><label for="existingInput">输入目录</label><div class="path-row"><input id="existingInput" type="text" value="input" spellcheck="false"><button id="browseInput" class="directory-button" type="button">选择</button></div></div>
+          <div id="uploadNotice" class="notice"></div>
+          <button id="clearUpload" class="secondary" type="button" hidden>删除本次上传副本</button>
+        </div>
+
+        <div class="section">
+          <div class="section-label"><span>设备</span><small id="runtimeHint">检测中</small></div>
+          <div class="device-grid">
+            <button class="device-option" data-device="auto" data-help="自动检测可用设备；有可用 NVIDIA GPU 时使用 GPU，否则使用 CPU。" type="button"><strong>自动</strong></button>
+            <button class="device-option" data-device="cpu" data-help="强制使用 CPU 推理，适合没有 NVIDIA GPU 的电脑。" type="button"><strong>CPU</strong></button>
+            <button class="device-option" data-device="gpu:0" data-help="强制使用第一个 NVIDIA GPU。当前电脑没有可用 GPU 时不要选择此项。" type="button"><strong>GPU 0</strong></button>
+          </div>
+          <div class="field" style="margin-top:13px" data-help="仅影响 CPU 推理。填写 0 时由程序使用系统默认线程数。"><label for="cpuThreads">CPU 线程数</label><input id="cpuThreads" type="number" min="0" max="256" step="1" value="0"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-label"><span>预处理</span></div>
+          <div class="switch-list">
+            <label class="switch" data-help="识别并校正整页文档的旋转方向。"><span>文档方向校正</span><input id="docOrientation" type="checkbox"><span class="switch-track"></span></label>
+            <label class="switch" data-help="尝试修正拍摄时的透视变形，适合倾斜或斜拍页面。"><span>透视矫正</span><input id="unwarp" type="checkbox"><span class="switch-track"></span></label>
+            <label class="switch" data-help="识别文字行的方向，适合包含横向或旋转文字的页面。"><span>文字行方向识别</span><input id="lineOrientation" type="checkbox"><span class="switch-track"></span></label>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-label"><span>输出</span></div>
+           <div class="field" data-help="识别结果会保存到这里。默认是应用目录内的 output。"><label for="outputDir">输出目录</label><input id="outputDir" type="text" value="output" spellcheck="false"></div>
+          <label class="switch" data-help="开启后为每张图片额外保存详细 JSON；默认关闭以减少输出文件。" style="margin-top:12px"><span>保存 JSON</span><input id="includeJson" type="checkbox"><span class="switch-track"></span></label>
+        </div>
+
+        <button id="run" class="primary" type="button">开始本地识别</button>
+        <div id="formNotice" class="notice"></div>
+      </section>
+
+      <section class="results-panel">
+        <div class="results-head"><div><h2>结果</h2><p id="resultSubtitle"></p></div></div>
+        <div class="metrics"><div class="metric"><span>状态</span><strong id="metricStatus">待开始</strong></div><div class="metric"><span>图片数量</span><strong id="metricFiles">0</strong></div><div class="metric"><span>平均置信度</span><strong id="metricScore">—</strong></div></div>
+        <div class="progress"><div class="progress-line"><strong>任务进度</strong><div><span id="progressCount" class="progress-count">0/0 张</span><span id="status" class="status">等待开始</span></div></div><div class="bar"><div id="barFill" class="bar-fill"></div></div><div id="error" class="error"></div></div>
+        <div id="results" class="results"><div class="empty">还没有结果。先添加一张或多张图片。</div></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="imageModal" class="modal" hidden role="dialog" aria-modal="true" aria-label="查看识别结果大图">
+    <div class="modal-content">
+      <button id="closeImageModal" class="modal-close" type="button" aria-label="关闭大图">×</button>
+      <img id="modalImage" alt="">
+      <div id="modalCaption" class="modal-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const ACCESS_TOKEN = "__OCR_ACCESS_TOKEN__";
+    const state = { uploadedInput: '', selectedFiles: [], device: 'auto', running: false };
+    const previewUrls = [];
+    const picker = $('filePicker');
+    const dropzone = $('dropzone');
+
+    function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+    function setNotice(message, error = false) { $('formNotice').textContent = message; $('formNotice').className = `notice${error ? ' error' : ''}`; }
+    function setDevice(device) { state.device = device; document.querySelectorAll('.device-option').forEach(button => button.classList.toggle('active', button.dataset.device === device)); }
+    function renderFiles(files) { $('uploadCount').textContent = files.length ? `${files.length} 张图片` : '尚未选择'; $('fileList').innerHTML = files.map(file => `<div class="file-row"><b>${escapeHtml(file.name)}</b><span>${Math.round(file.size / 1024)} KB</span></div>`).join(''); }
+
+    async function uploadFiles(files) {
+      const images = [...files].filter(file => /\.(png|jpe?g)$/i.test(file.name));
+      if (!images.length) { setNotice('请选择 PNG、JPG 或 JPEG 图片。', true); return; }
+      state.selectedFiles = images;
+      renderFiles(images);
+      $('uploadNotice').textContent = '正在把图片保存到项目目录…';
+      const form = new FormData();
+      images.forEach(file => form.append('files', file, file.name));
+      try {
+        const response = await fetch('/api/upload', { method: 'POST', headers: {'X-OCR-Token': ACCESS_TOKEN}, body: form });
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.error || '上传失败');
+        state.uploadedInput = body.input_dir;
+        $('clearUpload').hidden = false;
+        $('uploadNotice').textContent = `已保存 ${body.count} 张图片，可开始识别。`;
+        setNotice('图片已准备好。');
+      } catch (error) {
+        state.uploadedInput = '';
+        $('clearUpload').hidden = true;
+        $('uploadNotice').textContent = error.message;
+        setNotice(error.message, true);
+      }
+    }
+
+    async function privateFile(name) {
+      const response = await fetch(`/files/${encodeURIComponent(name)}`, { headers: {'X-OCR-Token': ACCESS_TOKEN} });
+      if (!response.ok) throw new Error(`无法读取文件：${name}（${response.status}）`);
+      return response.blob();
+    }
+
+    async function downloadFile(name) {
+      try {
+        const url = URL.createObjectURL(await privateFile(name));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = name;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      } catch (error) { $('error').textContent = error.message; }
+    }
+
+    async function loadPreviews() {
+      for (const image of document.querySelectorAll('.image-preview[data-filename]')) {
+        try {
+          const url = URL.createObjectURL(await privateFile(image.dataset.filename));
+          if (!image.isConnected) { URL.revokeObjectURL(url); continue; }
+          previewUrls.push(url);
+          image.dataset.imageSrc = url;
+          image.querySelector('img').src = url;
+        } catch (error) { image.style.display = 'none'; }
+      }
+    }
+
+    function renderResults(data) {
+      const rows = data.results || [];
+      $('metricFiles').textContent = rows.length;
+      const scores = rows.map(row => Number(row.average_score)).filter(Number.isFinite);
+      $('metricScore').textContent = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(3) : '—';
+      $('resultSubtitle').textContent = rows.length ? `${rows.length} 张图片已经处理完成。` : '完成一次识别后，结果会显示在这里。';
+      if (!rows.length) {
+        closeImageModal();
+        $('results').dataset.signature = '';
+        previewUrls.splice(0).forEach(url => URL.revokeObjectURL(url));
+        $('results').innerHTML = '<div class="empty">还没有结果。先添加一张或多张图片。</div>';
+        return;
+      }
+      // Polling must not reload large annotated images every half-second.
+      const signature = JSON.stringify([data.job?.finished_at, rows]);
+      if ($('results').dataset.signature === signature) return;
+      closeImageModal();
+      previewUrls.splice(0).forEach(url => URL.revokeObjectURL(url));
+      $('results').dataset.signature = signature;
+       $('results').innerHTML = rows.map(row => {
+          const text = Array.isArray(row.texts) ? row.texts.join('\n') : '';
+          const jsonButton = row.json_file ? `<button type="button" data-download="${escapeHtml(row.json_file)}">下载 JSON</button>` : '';
+          const txtButton = row.text_file ? `<button type="button" data-download="${escapeHtml(row.text_file)}">下载 TXT</button>` : '';
+          return `<article class="result"><div><button class="image-preview" type="button" data-filename="${escapeHtml(row.annotated_file || '')}" data-image-alt="${escapeHtml(row.image)}"><img alt="${escapeHtml(row.image)}"><span>点击查看大图</span></button></div><div><h3>${escapeHtml(row.image)}</h3><div class="meta">${escapeHtml(row.lines || 0)} 行 · ${escapeHtml(row.characters || 0)} 字符 · 平均置信度 ${escapeHtml(row.average_score || '—')}</div><div class="text-box">${escapeHtml(text || '未检测到文字')}</div><div class="result-links">${txtButton}${jsonButton}</div></div></article>`;
+        }).join('');
+      loadPreviews();
+     }
+
+     function openImageModal(source, alt) {
+       $('modalImage').src = source;
+       $('modalImage').alt = alt;
+       $('modalCaption').textContent = alt;
+       $('imageModal').hidden = false;
+       $('closeImageModal').focus();
+     }
+
+     function closeImageModal() {
+       $('imageModal').hidden = true;
+       $('modalImage').removeAttribute('src');
+     }
+
+    function renderStatus(data) {
+      const job = data.job || {};
+       const statusText = job.status === 'running' ? job.message : (job.status === 'completed' ? '识别完成' : (job.status === 'failed' ? '识别失败' : job.message || '等待开始'));
+       $('status').textContent = statusText;
+       $('status').className = `status ${job.status || ''}`;
+       const current = Number(job.progress_current || 0);
+       const total = Number(job.progress_total || 0);
+       $('progressCount').textContent = `${current}/${total} 张`;
+       const percent = job.status === 'completed' ? 100 : total ? Math.min(100, Math.max(0, current / total * 100)) : 0;
+       $('barFill').style.width = `${percent}%`;
+       $('barFill').className = `bar-fill ${job.status || ''}`;
+       $('metricStatus').textContent = job.status === 'running' ? '处理中' : job.status === 'completed' ? '已完成' : job.status === 'failed' ? '失败' : '待开始';
+       $('error').textContent = job.error || '';
+       state.running = job.status === 'running' || job.status === 'starting';
+      $('run').disabled = state.running;
+      renderResults(data);
+    }
+
+    async function refresh() { try { const response = await fetch('/api/status', {headers: {'X-OCR-Token': ACCESS_TOKEN}}); renderStatus(await response.json()); } catch (error) { $('error').textContent = `无法连接本地服务：${error.message}`; } }
+    async function loadRuntime() {
+      try {
+        const response = await fetch('/api/runtime', {headers: {'X-OCR-Token': ACCESS_TOKEN}});
+         const body = await response.json();
+         const runtime = body.runtime || {};
+         if (runtime.loading) {
+           $('runtime').textContent = '正在加载 OCR 运行时…';
+           $('runtimeHint').textContent = '检测中';
+           document.querySelector('[data-device="gpu:0"]').disabled = true;
+           setTimeout(loadRuntime, 700);
+           return;
+         }
+         if (runtime.error) throw new Error(runtime.error);
+        const hasGpu = runtime.cuda && runtime.gpu_count > 0;
+        $('runtime').textContent = hasGpu ? `Paddle ${runtime.paddle} · GPU ${runtime.gpu_count} 可用` : `Paddle ${runtime.paddle || 'unknown'} · CPU 模式`;
+         $('runtimeHint').textContent = hasGpu ? 'GPU 可用' : '未检测到 GPU';
+        document.querySelector('[data-device="gpu:0"]').disabled = !hasGpu;
+        setDevice(hasGpu ? 'gpu:0' : 'auto');
+      } catch (error) { $('runtime').textContent = error.message; $('runtimeHint').textContent = '检测失败'; setDevice('auto'); }
+    }
+
+    $('chooseFiles').addEventListener('click', () => picker.click());
+    $('clearUpload').addEventListener('click', async () => {
+      if (!state.uploadedInput || state.running || !confirm('确定删除本次上传到应用目录的图片副本吗？')) return;
+      try {
+        const response = await fetch('/api/cleanup', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-OCR-Token': ACCESS_TOKEN}, body: JSON.stringify({input_dir: state.uploadedInput})});
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.error || '清理失败');
+        state.uploadedInput = '';
+        state.selectedFiles = [];
+        picker.value = '';
+        renderFiles([]);
+        $('clearUpload').hidden = true;
+        $('uploadNotice').textContent = '本次上传副本已删除。';
+      } catch (error) { setNotice(error.message, true); }
+    });
+    picker.addEventListener('change', event => uploadFiles(event.target.files));
+    ['dragenter', 'dragover'].forEach(type => dropzone.addEventListener(type, event => { event.preventDefault(); dropzone.classList.add('dragging'); }));
+    ['dragleave', 'drop'].forEach(type => dropzone.addEventListener(type, event => { event.preventDefault(); dropzone.classList.remove('dragging'); }));
+    dropzone.addEventListener('drop', event => uploadFiles(event.dataTransfer.files));
+    document.querySelectorAll('.device-option').forEach(button => button.addEventListener('click', () => { if (!button.disabled) setDevice(button.dataset.device); }));
+    $('run').addEventListener('click', async () => {
+      if (state.running) return;
+      const inputDir = state.uploadedInput || $('existingInput').value.trim() || 'input';
+      const payload = { input_dir: inputDir, output_dir: $('outputDir').value.trim() || 'output', device: state.device, cpu_threads: Number($('cpuThreads').value || 0), doc_orientation: $('docOrientation').checked, unwarp: $('unwarp').checked, line_orientation: $('lineOrientation').checked, include_json: $('includeJson').checked };
+      setNotice('正在启动本地 OCR…');
+      try {
+        const response = await fetch('/api/run', { method: 'POST', headers: {'Content-Type': 'application/json', 'X-OCR-Token': ACCESS_TOKEN}, body: JSON.stringify(payload) });
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.error || '启动失败');
+        await refresh();
+      } catch (error) { setNotice(error.message, true); }
+    });
+    $('stopServer').addEventListener('click', async () => {
+      if (!confirm('确定停止本地 OCR 控制台吗？')) return;
+      try { await fetch('/api/shutdown', { method: 'POST', headers: {'X-OCR-Token': ACCESS_TOKEN} }); $('status').textContent = '服务已停止'; $('metricStatus').textContent = '已停止'; } catch (error) { $('error').textContent = error.message; }
+    });
+    async function browseDirectory(kind, targetId) {
+      try {
+        const response = await fetch('/api/browse', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-OCR-Token': ACCESS_TOKEN}, body: JSON.stringify({kind})});
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.error || '目录选择失败');
+        if (body.path) $(targetId).value = body.path;
+      } catch (error) { setNotice(error.message, true); }
+    }
+     $('browseInput').addEventListener('click', () => browseDirectory('input', 'existingInput'));
+      document.addEventListener('click', event => {
+        const download = event.target.closest?.('[data-download]');
+        if (download) { downloadFile(download.dataset.download); return; }
+        const preview = event.target.closest?.('.image-preview');
+        if (preview && preview.dataset.imageSrc) {
+         openImageModal(preview.dataset.imageSrc, preview.dataset.imageAlt || '识别结果');
+         return;
+       }
+       if (event.target === $('imageModal')) closeImageModal();
+     });
+     $('closeImageModal').addEventListener('click', closeImageModal);
+     document.addEventListener('keydown', event => { if (event.key === 'Escape' && !$('imageModal').hidden) closeImageModal(); });
+    let tipTimer = null;
+    let tipElement = null;
+    document.addEventListener('mouseover', event => {
+      const target = event.target.closest?.('[data-help]');
+      if (!target) return;
+      clearTimeout(tipTimer);
+      tipTimer = setTimeout(() => {
+        tipElement?.remove();
+        tipElement = document.createElement('div');
+        tipElement.className = 'hover-tip';
+        tipElement.textContent = target.dataset.help;
+        document.body.appendChild(tipElement);
+        const rect = target.getBoundingClientRect();
+        tipElement.style.left = `${Math.min(rect.left, window.innerWidth - tipElement.offsetWidth - 12)}px`;
+        tipElement.style.top = `${Math.min(rect.bottom + 8, window.innerHeight - tipElement.offsetHeight - 12)}px`;
+      }, 2000);
+    });
+    document.addEventListener('mouseout', event => { if (event.target.closest?.('[data-help]')) { clearTimeout(tipTimer); tipElement?.remove(); tipElement = null; } });
+    loadRuntime();
+    refresh();
+     setInterval(refresh, 1500);
+  </script>
+</body>
+</html>

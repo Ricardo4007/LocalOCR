@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+@page { size: A4; margin: 18mm 18mm 20mm; }
+body { color:#111; font-family:Arial,"Microsoft YaHei",sans-serif; font-size:10.5pt; line-height:1.55; }
+h1 { font-size:30pt; line-height:1; margin:0 0 8mm; letter-spacing:-1px; }
+h2 { margin:10mm 0 3mm; padding-top:3mm; border-top:2px solid #111; font-size:16pt; }
+h3 { margin:5mm 0 2mm; font-size:11.5pt; }
+p { margin:2.5mm 0; }
+ul { margin:2mm 0 4mm; padding-left:7mm; }
+li { margin:1.4mm 0; }
+.cover { min-height:235mm; display:flex; flex-direction:column; justify-content:space-between; }
+.mark { width:18mm; height:18mm; display:grid; place-items:center; margin-bottom:12mm; background:#ed1c24; color:#fff; font-size:24pt; font-weight:bold; }
+.lead { max-width:135mm; font-size:15pt; color:#555; }
+.meta { border-top:1px solid #111; padding-top:3mm; color:#555; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:5mm; }
+.box { border:1px solid #111; padding:4mm; }
+code { font-family:Consolas,monospace; background:#eee; padding:1px 3px; }
+.warning { border-left:4px solid #ed1c24; padding-left:4mm; }
+</style>
+</head>
+<body>
+<section class="cover">
+<div><div class="mark">O</div><div style="font-size:11pt;letter-spacing:2px;text-transform:uppercase">Local OCR</div><h1>本地手写文字识别</h1><p class="lead">Windows 便携交付版。程序、模型、Python 运行时和默认工作目录都包含在自解压包内；无需安装 Python、uv、Paddle 或其他开发环境。</p></div>
+<div class="meta"><p><b>版本：</b>Portable Delivery 1.0</p><p><b>运行方式：</b>双击自解压 EXE，程序会在 EXE 旁创建 <code>LocalOCR</code> 目录并自动打开本地控制台</p><p><b>隐私：</b>图片在本机处理，不调用云端 OCR API</p></div>
+</section>
+<h2>一、开始使用</h2>
+<ol><li>双击交付目录中的自解压 EXE。</li><li>程序会在 EXE 旁创建 <code>LocalOCR</code> 目录并把全部运行文件放入其中，不向用户目录写入缓存。</li><li>浏览器打开本地控制台后，拖放图片或点击“选择文件”。</li><li>选择设备：推荐“自动”。有 NVIDIA GPU 时使用 GPU，没有时自动使用 CPU。</li><li>确认输入目录和输出目录，点击“开始本地识别”。</li></ol>
+<h2>二、设备与迁移</h2>
+<div class="grid"><div class="box"><h3>有 NVIDIA GPU</h3><p>自动模式会检测第一个可用 CUDA 设备并使用 GPU。当前项目在 RTX 4060 上已验证。</p></div><div class="box"><h3>没有 NVIDIA GPU</h3><p>同一套交付包会检测不到 CUDA 设备并切换到 CPU。无需重新安装依赖。</p></div></div>
+<p class="warning">请使用 64 位 Windows。GPU 加速需要兼容的 NVIDIA 驱动；驱动不可用时自动模式仍可使用 CPU。</p>
+<h2>三、网页设置</h2>
+<ul><li><b>图片：</b>支持 PNG、JPG、JPEG，可一次添加多张。</li><li><b>输入目录：</b>可使用程序目录内的 <code>input</code>，也可以通过“选择”按钮选取其他磁盘目录。</li><li><b>设备：</b>自动、CPU、GPU 0。</li><li><b>CPU 线程数：</b>0 表示程序使用系统默认线程数。</li><li><b>预处理：</b>文档方向校正、透视矫正、文字行方向识别。</li><li><b>输出目录：</b>默认是程序目录内的 <code>output</code>，需要其他位置时直接填写目录路径。</li><li><b>保存 JSON：</b>默认关闭。打开后会额外保存每张图片的详细 JSON。</li></ul>
+<h2>四、输出文件</h2>
+<ul><li><code>图片名.txt</code>：识别文本。</li><li><code>图片名_ocr_res_img.png</code>：带识别标注的图片。</li><li><code>summary.csv</code>：批次汇总。</li><li><code>图片名.json</code>：开启“保存 JSON”后生成。</li></ul>
+<h2>五、安全与数据位置</h2>
+<p>控制台只监听 <code>127.0.0.1</code>，不会监听局域网地址。API 使用启动时生成的随机访问令牌，并检查本机来源。未授权请求不能调用识别、上传、目录选择或文件下载接口。</p>
+<p>程序默认缓存、上传临时文件和模型都在解压目录内。输入和输出可以由用户明确选择到其他目录；程序不会扫描或读取未选择的外部目录。</p>
+<h2>六、问题排查</h2>
+<ul><li>页面打不开：确认自解压后的程序仍在运行，并重启自解压 EXE。</li><li>GPU 不可用：在网页选择“自动”，程序会使用 CPU。</li><li>识别速度较慢：减少预处理选项，或使用 GPU 设备。</li><li>空间不足：模型和运行时体积较大，请选择至少 8 GB 可用空间的解压目录。</li></ul>
+</body></html>
