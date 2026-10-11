@@ -28,6 +28,7 @@ runtime-tools/
 # Private source images, OCR outputs and downloaded models
 input/*
 !input/.gitkeep
+!input/example.jpg
 output/*
 !output/.gitkeep
 

@@ -1,7 +1,12 @@
 [project]
-name = "local-handwriting-ocr"
+name = "localocr"
 version = "0.1.0"
-description = "Local batch OCR baseline for handwritten PNG document photos"
+description = "Local Windows OCR tool with CPU and NVIDIA GPU support"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Ricardo Qin" },
+]
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "paddleocr>=3.3,<3.4",

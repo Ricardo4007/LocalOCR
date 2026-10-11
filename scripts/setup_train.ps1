@@ -56,7 +56,7 @@ if not cuda or count < 1:
 paddle.set_device("gpu:0")
 print("Selected device: gpu:0")
 "@
-    & $PythonPath -c $verifyCode
+    $verifyCode | & $PythonPath -
     if ($LASTEXITCODE -ne 0) {
         throw "GPU runtime verification failed with exit code $LASTEXITCODE."
     }

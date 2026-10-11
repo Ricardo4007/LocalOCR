@@ -408,7 +408,7 @@ wheels = [
 ]
 
 [[package]]
-name = "local-handwriting-ocr"
+name = "localocr"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
